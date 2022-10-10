@@ -1,0 +1,17 @@
+name = "ForwardDiffChainRules"
+uuid = "c9556dd2-1aed-4cfe-8560-1557cf593001"
+authors = ["MT <mohamed82008@gmail.com>", "TT <tobias.thummerer@informatik.uni-augsburg.de>"]
+version = "0.1.0"
+
+[deps]
+ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
+Requires = "ae029012-a4dd-5104-9daa-d747884805df"
+
+[compat]
+ChainRulesCore = "1.15.0"
+ForwardDiff = "0.10.0"
+MacroTools = "0.5.10"
+julia = "1.6"
