@@ -90,17 +90,4 @@ function _fd_frule(sig)
     end
 end
 
-function flatten(::Nothing)
-    return Float64[], _ -> nothing
-end
-function flatten(::NoTangent)
-    return Float64[], _ -> NoTangent()
-end
-function flatten(::ZeroTangent)
-    return Float64[], _ -> ZeroTangent()
-end
-function flatten(::Tuple{})
-    return Float64[], _ -> ()
-end
-
 end # module ForwardDiffChainRules

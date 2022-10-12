@@ -8,6 +8,7 @@
 - `ChainRulesCore.rrule`
 - `ChainRulesCore.frule`
 - an additional dispatch of your function for values of type `ForwardDiff.Dual`
+
 Technically, the last two candidates aim both for forward sensitivities, so include the same differentiation rules. This is redundant code and an error prone coding task... and not necessary anymore! 
 
 [ForwardDiffChainRules.jl](https://github.com/ThummeTo/ForwardDiffChainRules.jl) allows you to re-use the differentiation code defined in an existing `ChainRulesCore.frule` with only a few lines of code and without re-coding your differentiation rules.
