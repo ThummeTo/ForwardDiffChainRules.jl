@@ -17,12 +17,12 @@ Technically, the last two candidates aim both for forward sensitivities, so incl
 
 2\. Install [*ForwardDiffChainRules.jl*](https://github.com/ThummeTo/ForwardDiffChainRules.jl):
 ```julia-repl
-(@v1.6) pkg> add ForwardDiffChainRules.jl
+(@v1.6) pkg> add ForwardDiffChainRules
 ```
 
 3\. If you want to check that everything works correctly, you can run the tests bundled with [*ForwardDiffChainRules.jl*](https://github.com/ThummeTo/ForwardDiffChainRules.jl):
 ```julia-repl
-(@v1.6) pkg> test ForwardDiffChainRules.jl
+(@v1.6) pkg> test ForwardDiffChainRules
 ```
 
 4\. Have a look inside the [examples folder](https://github.com/ThummeTo/ForwardDiffChainRules.jl/tree/main/examples).
@@ -31,8 +31,14 @@ Technically, the last two candidates aim both for forward sensitivities, so incl
 ```julia
 using ForwardDiffChainRules
 
-# define your frule as usual
+function f1(x1, x2)
+   # do whatever you want to do in your function
+   return (x + 2y).^2
+end
+
+# define your frule for function f1 as usual
 function ChainRulesCore.frule((_, Δx1, Δx2), ::typeof(f1), x1, x2)
+   # this could be any code you want of course
    return f1(x1, x2), Δx1 + Δx2
 end
 
