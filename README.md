@@ -1,6 +1,6 @@
 # ForwardDiffChainRules.jl
 [![Run Tests](https://github.com/ThummeTo/ForwardDiffChainRules.jl/actions/workflows/Test.yml/badge.svg)](https://github.com/ThummeTo/ForwardDiffChainRules.jl/actions/workflows/Test.yml)
-[![Coverage](https://codecov.io/gh/ThummeTo/ForwardDiffChainRules.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ThummeTo/ForwardDiffChainRules.jl)
+[![Coverage](https://codecov.io/gh/ThummeTo/ForwardDiffChainRules.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/ThummeTo/ForwardDiffChainRules.jl)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
 ## What is ForwardDiffChainRules.jl?
