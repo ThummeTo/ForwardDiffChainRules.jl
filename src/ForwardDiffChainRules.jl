@@ -41,11 +41,12 @@ end
 export @ForwardDiff_frule
 
 function _fd_frule(sig)
-    MacroTools.@capture(sig, f_(x__))
+    MacroTools.@capture(sig, f_(x__; k__))
     return quote
-        function $(esc(f))($(esc.(x)...))
+        function $(esc(f))($(esc.(x)...); $(esc.(k)...))
             f = $(esc(f))
             x = ($(esc.(x)...),)
+            k = (; $(esc.(k)...),)
             flatx, unflattenx = ForwardDiffChainRules.DifferentiableFlatten.flatten(x)
             CS = length(ForwardDiff.partials(first(flatx)))
             flat_xprimals = ForwardDiff.value.(flatx)
@@ -54,7 +55,7 @@ function _fd_frule(sig)
             xprimals = unflattenx(flat_xprimals)
             xpartials1 = unflattenx(flat_xpartials[:,1])
             yprimals, ypartials1 = ChainRulesCore.frule(
-                (NoTangent(), xpartials1...), f, xprimals...,
+                (NoTangent(), xpartials1...), f, xprimals...; k...,
             )
             flat_yprimals, unflatteny = ForwardDiffChainRules.DifferentiableFlatten.flatten(yprimals)
             flat_ypartials1, _ = ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartials1)
