@@ -11,7 +11,7 @@ MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 
 [compat]
 ChainRulesCore = "1.15.0"
-DifferentiableFlatten = "0.1.0"
+DifferentiableFlatten = "0.1.1"
 ForwardDiff = "0.10.0"
 MacroTools = "0.5.10"
 julia = "1.6"
