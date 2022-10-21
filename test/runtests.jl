@@ -168,4 +168,16 @@ SOFTWARE.
         @test frule_count == 16
         @test norm(g - I) < 1e-6
     end
+    @testset "kwargs" begin
+        fkwarg(x; a = 2.0) = x * a
+        frule_count = 0
+        function ChainRulesCore.frule((_, Δx), ::typeof(fkwarg), x::Real; a = 2.0)
+            global frule_count += 1
+            println("frule was called")
+            return fkwarg(x; a), a * Δx
+        end
+        @ForwardDiff_frule fkwarg(x::ForwardDiff.Dual; kwargs...)
+        @test ForwardDiff.derivative(x -> fkwarg(x, a = 3.0), 2.0) == 3
+        @test frule_count == 1
+    end
 end
