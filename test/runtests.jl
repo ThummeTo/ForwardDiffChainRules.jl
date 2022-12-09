@@ -179,7 +179,5 @@ SOFTWARE.
         @ForwardDiff_frule fkwarg(x1::ForwardDiff.Dual, x2::ForwardDiff.Dual; kwargs...)
         @test ForwardDiff.gradient(x -> fkwarg(x[1], x[2], a = 3.0), [1.0, 2.0]) == [6, 3]
         @test frule_count == 2
-        @test ForwardDiff.gradient(a -> fkwarg(1.0, 2.0, a = a), 3.0) == 2.0
-        @test frule_count == 3
     end
 end
