@@ -169,15 +169,15 @@ SOFTWARE.
         @test norm(g - I) < 1e-6
     end
     @testset "kwargs" begin
-        fkwarg(x; a = 2.0) = x * a
+        fkwarg(x1, x2; a = 2.0) = x1 * x2 * a
         frule_count = 0
-        function ChainRulesCore.frule((_, Δx), ::typeof(fkwarg), x::Real; a = 2.0)
+        function ChainRulesCore.frule((_, Δx1, Δx2), ::typeof(fkwarg), x1::Real, x2::Real; a)
             global frule_count += 1
             println("frule was called")
-            return fkwarg(x; a), a * Δx
+            return fkwarg(x1, x2; a), a * x2 * Δx1 + a * x1 * Δx2
         end
-        @ForwardDiff_frule fkwarg(x::ForwardDiff.Dual; kwargs...)
-        @test ForwardDiff.derivative(x -> fkwarg(x, a = 3.0), 2.0) == 3
-        @test frule_count == 1
+        @ForwardDiff_frule fkwarg(x1::ForwardDiff.Dual, x2::ForwardDiff.Dual; kwargs...)
+        @test ForwardDiff.gradient(x -> fkwarg(x[1], x[2], a = 3.0), [1.0, 2.0]) == [6, 3]
+        @test frule_count == 2
     end
 end

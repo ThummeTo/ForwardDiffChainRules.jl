@@ -66,7 +66,7 @@ function _fd_frule(sig)
             flat_ypartials1, _ = ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartials1)
             flat_ypartials = hcat(reshape(flat_ypartials1, :, 1), ntuple(Val(CS - 1)) do i
                 xpartialsi = unflattenx(flat_xpartials[:, i+1])
-                _, ypartialsi = ChainRulesCore.frule((NoTangent(), xpartialsi...), f, xprimals...)
+                _, ypartialsi = ChainRulesCore.frule((NoTangent(), xpartialsi...), f, xprimals...; ks...)
                 return ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartialsi)[1]
             end...)
 
