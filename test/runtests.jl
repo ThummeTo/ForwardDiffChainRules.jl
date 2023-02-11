@@ -8,7 +8,6 @@ using ForwardDiffChainRules
 using Test
 using ChainRules, ChainRulesCore, ForwardDiff
 using LinearAlgebra
-using ImplicitDifferentiation, Optim
 import NamedTupleTools: ntfromstruct, structfromnt
 
 #
@@ -183,19 +182,24 @@ SOFTWARE.
     end
 end
 
-@testset "ImplicitDifferentiation" begin
-    function dumb_identity(x)
-        f(y) = sum(abs2, y-x)
-        y0 = zero(x)
-        res = optimize(f, y0, LBFGS(); autodiff=:forward)
-        y = Optim.minimizer(res)
-        return y
+@static if VERSION > v"1.6"
+    @eval begin
+        using ImplicitDifferentiation, Optim
+        @testset "ImplicitDifferentiation" begin
+            function dumb_identity(x)
+                f(y) = sum(abs2, y-x)
+                y0 = zero(x)
+                res = optimize(f, y0, LBFGS(); autodiff=:forward)
+                y = Optim.minimizer(res)
+                return y
+            end
+            zero_gradient(x, y) = 2(y - x);
+            implicit = ImplicitFunction(dumb_identity, zero_gradient);
+            x = rand(3, 2)
+            J1 = ForwardDiff.jacobian(implicit, x)
+            @ForwardDiff_frule (f::typeof(implicit))(x::AbstractMatrix{<:ForwardDiff.Dual})
+            J2 = ForwardDiff.jacobian(implicit, x)
+            @test J1 ≈ J2
+        end
     end
-    zero_gradient(x, y) = 2(y - x);
-    implicit = ImplicitFunction(dumb_identity, zero_gradient);
-    x = rand(3, 2)
-    J1 = ForwardDiff.jacobian(implicit, x)
-    @ForwardDiff_frule (f::typeof(implicit))(x::AbstractMatrix{<:ForwardDiff.Dual})
-    J2 = ForwardDiff.jacobian(implicit, x)
-    @test J1 ≈ J2
 end
