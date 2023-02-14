@@ -8,6 +8,8 @@ using ForwardDiffChainRules
 using Test
 using ChainRules, ChainRulesCore, ForwardDiff
 using LinearAlgebra
+import NamedTupleTools: ntfromstruct, structfromnt
+using ImplicitDifferentiation, Optim
 
 #
 # Copyright (c) 2022 The contributors
@@ -95,7 +97,6 @@ SOFTWARE.
 
         # I recommend creating your own type to avoid piracy
         ForwardDiffChainRules.DifferentiableFlatten.@constructor Symmetric Symmetric
-        import NamedTupleTools: ntfromstruct, structfromnt
         ntfromstruct(a::Symmetric) = (data = a.data,)
         structfromnt(::Type{Symmetric}, x::NamedTuple) = Symmetric(x.data, :U)
         @ForwardDiff_frule _eigvals!(A::Symmetric{<:ForwardDiff.Dual})
@@ -180,4 +181,21 @@ SOFTWARE.
         @test ForwardDiff.gradient(x -> fkwarg(x[1], x[2], a = 3.0), [1.0, 2.0]) == [6, 3]
         @test frule_count == 2
     end
+end
+
+@testset "ImplicitDifferentiation" begin
+    function dumb_identity(x)
+        f(y) = sum(abs2, y-x)
+        y0 = zero(x)
+        res = optimize(f, y0, LBFGS(); autodiff=:forward)
+        y = Optim.minimizer(res)
+        return y
+    end
+    zero_gradient(x, y) = 2(y - x);
+    implicit = ImplicitFunction(dumb_identity, zero_gradient);
+    x = rand(3, 2)
+    J1 = ForwardDiff.jacobian(implicit, x)
+    @ForwardDiff_frule (f::typeof(implicit))(x::AbstractMatrix{<:ForwardDiff.Dual})
+    J2 = ForwardDiff.jacobian(implicit, x)
+    @test J1 ≈ J2
 end

@@ -40,6 +40,25 @@ macro ForwardDiff_frule(sig)
 end
 export @ForwardDiff_frule
 
+using ChainRulesCore
+struct ForwardDiffRuleConfig <: RuleConfig{Union{NoReverseMode,HasForwardsMode}} end
+
+function ChainRulesCore.frule_via_ad(
+    config::ForwardDiffRuleConfig,
+    tangent,
+    f,
+    f_arg;
+    kwargs...,
+)
+  direcct = frule(tangent, f, f_arg; kwargs...)
+  direcct === nothing || return direcctt
+  T = eltype(f_arg)
+  g = t -> f(f_arg + t * tangent[2])
+  return g(zero(T)), ForwardDiff.derivative(g, zero(T))
+end
+
+const cfg = ForwardDiffRuleConfig()
+
 function _fd_frule(sig)
     if MacroTools.@capture(sig, f_(x__; k__))
         nothing
@@ -60,13 +79,13 @@ function _fd_frule(sig)
             xprimals = unflattenx(flat_xprimals)
             xpartials1 = unflattenx(flat_xpartials[:,1])
             yprimals, ypartials1 = ChainRulesCore.frule(
-                (NoTangent(), xpartials1...), f, xprimals...; ks...,
+                cfg, (NoTangent(), xpartials1...), f, xprimals...; ks...,
             )
             flat_yprimals, unflatteny = ForwardDiffChainRules.DifferentiableFlatten.flatten(yprimals)
             flat_ypartials1, _ = ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartials1)
             flat_ypartials = hcat(reshape(flat_ypartials1, :, 1), ntuple(Val(CS - 1)) do i
                 xpartialsi = unflattenx(flat_xpartials[:, i+1])
-                _, ypartialsi = ChainRulesCore.frule((NoTangent(), xpartialsi...), f, xprimals...; ks...)
+                _, ypartialsi = ChainRulesCore.frule(cfg, (NoTangent(), xpartialsi...), f, xprimals...; ks...)
                 return ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartialsi)[1]
             end...)
 
