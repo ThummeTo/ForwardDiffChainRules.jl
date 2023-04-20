@@ -51,7 +51,7 @@ function ChainRulesCore.frule_via_ad(
     kwargs...,
 )
   direcct = frule(tangent, f, f_arg; kwargs...)
-  direcct === nothing || return direcctt
+  direcct === nothing || return direcct
   T = eltype(f_arg)
   g = t -> f(f_arg + t * tangent[2])
   return g(zero(T)), ForwardDiff.derivative(g, zero(T))
