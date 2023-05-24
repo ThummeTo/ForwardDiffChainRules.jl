@@ -172,7 +172,6 @@ SOFTWARE.
         @test norm(g - I) < 1e-6
     end
     @testset "exp!" begin
-        # Gradient of trace
         fexp = x -> sum(LinearAlgebra.exp!(copy(x)))
         X = rand(4, 4)
         g = ForwardDiff.gradient(fexp, X)
