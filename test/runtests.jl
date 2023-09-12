@@ -9,6 +9,7 @@ using Test
 using ChainRules, ChainRulesCore, ForwardDiff
 using LinearAlgebra
 import NamedTupleTools: ntfromstruct, structfromnt
+import FiniteDifferences
 
 #
 # Copyright (c) 2022 The contributors
@@ -173,7 +174,7 @@ SOFTWARE.
         fexp = x -> sum(LinearAlgebra.exp!(copy(x)))
         X = rand(4, 4)
         g = ForwardDiff.gradient(fexp, X)
-        g2 = FiniteDifferences.grad(central_fdm(5, 1), fexp, X)[1]
+        g2 = FiniteDifferences.grad(FiniteDifferences.central_fdm(5, 1), fexp, X)[1]
         @test norm(g-g2) < 1e-4
     end
     @testset "kwargs" begin
