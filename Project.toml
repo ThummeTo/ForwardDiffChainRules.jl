@@ -1,7 +1,7 @@
 name = "ForwardDiffChainRules"
 uuid = "c9556dd2-1aed-4cfe-8560-1557cf593001"
 authors = ["MT <mohamed82008@gmail.com>", "TT <tobias.thummerer@informatik.uni-augsburg.de>"]
-version = "0.2.0"
+version = "0.2.1"
 
 [deps]
 ChainRulesCore = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
@@ -10,7 +10,7 @@ ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 
 [compat]
-ChainRulesCore = "1.15.0"
+ChainRulesCore = "1.15.0, 1.16.0"
 DifferentiableFlatten = "0.1.1"
 ForwardDiff = "0.10.0"
 MacroTools = "0.5.10"
