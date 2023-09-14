@@ -9,6 +9,7 @@ using Test
 using ChainRules, ChainRulesCore, ForwardDiff
 using LinearAlgebra
 import NamedTupleTools: ntfromstruct, structfromnt
+import FiniteDifferences
 
 #
 # Copyright (c) 2022 The contributors
@@ -56,6 +57,7 @@ SOFTWARE.
         @ForwardDiff_frule f1(x1::ForwardDiff.Dual, x2::ForwardDiff.Dual)
         @ForwardDiff_frule f1(x1::AbstractVector{<:ForwardDiff.Dual}, x2::AbstractVector{<:ForwardDiff.Dual})
         @ForwardDiff_frule f1(x1::AbstractMatrix{<:ForwardDiff.Dual}, x2::AbstractMatrix{<:ForwardDiff.Dual})
+        @ForwardDiff_frule LinearAlgebra.exp!(A::AbstractMatrix{<:ForwardDiff.Dual}) true
 
         f2(x::NamedTuple, y::NamedTuple) = (a = x.a + y.a, b = x.b + y.b)
         f2(x::AbstractVector, y::AbstractVector) = f2.(x, y)
@@ -167,6 +169,13 @@ SOFTWARE.
         g = ForwardDiff.gradient(x -> sum(_eigvals!(Symmetric(x))), rand(4, 4))
         @test frule_count == 16
         @test norm(g - I) < 1e-6
+    end
+    @testset "exp!" begin
+        fexp = x -> sum(LinearAlgebra.exp!(copy(x)))
+        X = rand(4, 4)
+        g = ForwardDiff.gradient(fexp, X)
+        g2 = FiniteDifferences.grad(FiniteDifferences.central_fdm(5, 1), fexp, X)[1]
+        @test norm(g-g2) < 1e-4
     end
     @testset "kwargs" begin
         fkwarg(x1, x2; a = 2.0) = x1 * x2 * a

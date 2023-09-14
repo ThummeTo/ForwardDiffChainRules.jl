@@ -35,8 +35,19 @@ import ForwardDiff
 import MacroTools
 using DifferentiableFlatten
 
-macro ForwardDiff_frule(sig)
-    _fd_frule(sig)
+"""
+    @ForwardDiff_frule signature mutating
+
+`mutating` indicates whether or not the function is mutating the input argument.
+
+# Example
+To define a rule for `LinearAlgebra.exp!`, which is a mutating funciton, we call the macro like this
+```julia
+@ForwardDiff_frule LinearAlgebra.exp!(A::AbstractMatrix{<:ForwardDiff.Dual}) true
+```
+"""
+macro ForwardDiff_frule(sig, mutating=false)
+    _fd_frule(sig; mutating)
 end
 export @ForwardDiff_frule
 
@@ -59,7 +70,7 @@ end
 
 const cfg = ForwardDiffRuleConfig()
 
-function _fd_frule(sig)
+function _fd_frule(sig; mutating=false)
     if MacroTools.@capture(sig, f_(x__; k__))
         nothing
     else
@@ -77,15 +88,21 @@ function _fd_frule(sig)
             flat_xpartials = reduce(vcat, transpose.(ForwardDiff.partials.(flatx)))
 
             xprimals = unflattenx(flat_xprimals)
+            xprimals_copy = $mutating ? copy.(xprimals) : xprimals
             xpartials1 = unflattenx(flat_xpartials[:,1])
             yprimals, ypartials1 = ChainRulesCore.frule(
-                cfg, (NoTangent(), xpartials1...), f, xprimals...; ks...,
+                cfg, (NoTangent(), xpartials1...), f, xprimals_copy...; ks...,
             )
             flat_yprimals, unflatteny = ForwardDiffChainRules.DifferentiableFlatten.flatten(yprimals)
             flat_ypartials1, _ = ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartials1)
             flat_ypartials = hcat(reshape(flat_ypartials1, :, 1), ntuple(Val(CS - 1)) do i
+                if $mutating
+                    for (xpc, xp) in zip(xprimals_copy, xprimals)
+                        xpc .= xp # Update copy
+                    end
+                end
                 xpartialsi = unflattenx(flat_xpartials[:, i+1])
-                _, ypartialsi = ChainRulesCore.frule(cfg, (NoTangent(), xpartialsi...), f, xprimals...; ks...)
+                _, ypartialsi = ChainRulesCore.frule(cfg, (NoTangent(), xpartialsi...), f, xprimals_copy...; ks...)
                 return ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartialsi)[1]
             end...)
 
