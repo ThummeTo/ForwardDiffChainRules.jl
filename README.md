@@ -25,8 +25,6 @@ Technically, the last two candidates aim both for forward sensitivities, so incl
 (@v1.6) pkg> test ForwardDiffChainRules
 ```
 
-4\. Have a look inside the [examples folder](https://github.com/ThummeTo/ForwardDiffChainRules.jl/tree/main/examples).
-
 ## How can I add a dispatch for ForwardDiff based on an existing `frule`? 
 ```julia
 using ForwardDiffChainRules
