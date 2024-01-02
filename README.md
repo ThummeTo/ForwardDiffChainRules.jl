@@ -17,15 +17,13 @@ Technically, the last two candidates aim both for forward sensitivities, so incl
 
 2\. Install [*ForwardDiffChainRules.jl*](https://github.com/ThummeTo/ForwardDiffChainRules.jl):
 ```julia-repl
-(@v1.6) pkg> add ForwardDiffChainRules
+(@v1) pkg> add ForwardDiffChainRules
 ```
 
 3\. If you want to check that everything works correctly, you can run the tests bundled with [*ForwardDiffChainRules.jl*](https://github.com/ThummeTo/ForwardDiffChainRules.jl):
 ```julia-repl
-(@v1.6) pkg> test ForwardDiffChainRules
+(@v1) pkg> test ForwardDiffChainRules
 ```
-
-4\. Have a look inside the [examples folder](https://github.com/ThummeTo/ForwardDiffChainRules.jl/tree/main/examples).
 
 ## How can I add a dispatch for ForwardDiff based on an existing `frule`? 
 ```julia
