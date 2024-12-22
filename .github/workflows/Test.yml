@@ -1,4 +1,4 @@
-name: Run ForwardDiffChainRules.jl tests
+name: Run ForwardDiffChainRules.jl tests (latest)
 
 on: [push, pull_request]
 
@@ -25,6 +25,10 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
+
+      # Set up julia-cache
+      - name: Set up julia-cache
+        uses: julia-actions/cache@v2
 
       - uses: actions/cache@v4
         env:
