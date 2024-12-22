@@ -47,7 +47,7 @@ SOFTWARE.
 ## Functor f - fix first
 @testset "ForwardDiff frule" begin
     @eval begin
-        f1(x, y) = (x + 2y).^2
+        f1(x, y) = (x + 2y) .^ 2
         global frule_count = 0
         function ChainRulesCore.frule((_, Δx1, Δx2), ::typeof(f1), x1, x2)
             global frule_count += 1
@@ -55,24 +55,38 @@ SOFTWARE.
             return f1(x1, x2), Δx1 + Δx2
         end
         @ForwardDiff_frule f1(x1::ForwardDiff.Dual, x2::ForwardDiff.Dual)
-        @ForwardDiff_frule f1(x1::AbstractVector{<:ForwardDiff.Dual}, x2::AbstractVector{<:ForwardDiff.Dual})
-        @ForwardDiff_frule f1(x1::AbstractMatrix{<:ForwardDiff.Dual}, x2::AbstractMatrix{<:ForwardDiff.Dual})
+        @ForwardDiff_frule f1(
+            x1::AbstractVector{<:ForwardDiff.Dual},
+            x2::AbstractVector{<:ForwardDiff.Dual},
+        )
+        @ForwardDiff_frule f1(
+            x1::AbstractMatrix{<:ForwardDiff.Dual},
+            x2::AbstractMatrix{<:ForwardDiff.Dual},
+        )
         @ForwardDiff_frule LinearAlgebra.exp!(A::AbstractMatrix{<:ForwardDiff.Dual}) true
 
         f2(x::NamedTuple, y::NamedTuple) = (a = x.a + y.a, b = x.b + y.b)
         f2(x::AbstractVector, y::AbstractVector) = f2.(x, y)
-        function ChainRulesCore.frule((_, Δx1, Δx2), ::typeof(f2), x1::NamedTuple, x2::NamedTuple)
+        function ChainRulesCore.frule(
+            (_, Δx1, Δx2),
+            ::typeof(f2),
+            x1::NamedTuple,
+            x2::NamedTuple,
+        )
             global frule_count += 1
             println("frule was called")
             return f2(x1, x2), (a = Δx1.a + Δx2.a, b = Δx1.b + Δx2.b)
         end
-        @ForwardDiff_frule f2(x1::NamedTuple{<:Any, <:Tuple{Vararg{<:ForwardDiff.Dual}}}, x2::NamedTuple{<:Any, <:Tuple{Vararg{<:ForwardDiff.Dual}}})
+        @ForwardDiff_frule f2(
+            x1::NamedTuple{<:Any,<:Tuple{Vararg{<:ForwardDiff.Dual}}},
+            x2::NamedTuple{<:Any,<:Tuple{Vararg{<:ForwardDiff.Dual}}},
+        )
 
-        struct MyStruct{T, T1, T2}
+        struct MyStruct{T,T1,T2}
             a::T1
             b::T2
         end
-        MyStruct(a, b) = MyStruct{typeof(a), typeof(a), typeof(b)}(a, b)
+        MyStruct(a, b) = MyStruct{typeof(a),typeof(a),typeof(b)}(a, b)
 
         # The @constructor macro takes the type (first) and constructor function (second)
         # The constructor function takes input the fields generated from ntfromstruct (as multiple positional arguments)
@@ -80,12 +94,20 @@ SOFTWARE.
         ForwardDiffChainRules.DifferentiableFlatten.@constructor MyStruct MyStruct
 
         f2(x::MyStruct, y::MyStruct) = MyStruct(x.a + y.a, x.b + y.b)
-        function ChainRulesCore.frule((_, Δx1, Δx2), ::typeof(f2), x1::MyStruct, x2::MyStruct)
+        function ChainRulesCore.frule(
+            (_, Δx1, Δx2),
+            ::typeof(f2),
+            x1::MyStruct,
+            x2::MyStruct,
+        )
             global frule_count += 1
             println("frule was called")
             return f2(x1, x2), MyStruct(Δx1.a + Δx2.a, Δx1.b + Δx2.b)
         end
-        @ForwardDiff_frule f2(x1::MyStruct{<:ForwardDiff.Dual}, x2::MyStruct{<:ForwardDiff.Dual})
+        @ForwardDiff_frule f2(
+            x1::MyStruct{<:ForwardDiff.Dual},
+            x2::MyStruct{<:ForwardDiff.Dual},
+        )
         Base.sum(s::MyStruct) = s.a + s.b
 
         # I recommend creating your own type to avoid piracy
@@ -135,7 +157,7 @@ SOFTWARE.
     end
     frule_count = 0
     @testset "2 matrix inputs - 1 real output" begin
-        _f = x -> sum(f1(x[1:2,1:2], x[3:4,3:4]))
+        _f = x -> sum(f1(x[1:2, 1:2], x[3:4, 3:4]))
         g1 = ForwardDiff.gradient(_f, rand(4, 4))
         @test frule_count == 16
         cfg = ForwardDiff.GradientConfig(_f, rand(4, 4), ForwardDiff.Chunk{2}())
@@ -175,12 +197,18 @@ SOFTWARE.
         X = rand(4, 4)
         g = ForwardDiff.gradient(fexp, X)
         g2 = FiniteDifferences.grad(FiniteDifferences.central_fdm(5, 1), fexp, X)[1]
-        @test norm(g-g2) < 1e-4
+        @test norm(g - g2) < 1e-4
     end
     @testset "kwargs" begin
         fkwarg(x1, x2; a = 2.0) = x1 * x2 * a
         frule_count = 0
-        function ChainRulesCore.frule((_, Δx1, Δx2), ::typeof(fkwarg), x1::Real, x2::Real; a)
+        function ChainRulesCore.frule(
+            (_, Δx1, Δx2),
+            ::typeof(fkwarg),
+            x1::Real,
+            x2::Real;
+            a,
+        )
             global frule_count += 1
             println("frule was called")
             return fkwarg(x1, x2; a), a * x2 * Δx1 + a * x1 * Δx2

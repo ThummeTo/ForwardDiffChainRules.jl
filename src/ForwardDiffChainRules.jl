@@ -46,7 +46,7 @@ To define a rule for `LinearAlgebra.exp!`, which is a mutating funciton, we call
 @ForwardDiff_frule LinearAlgebra.exp!(A::AbstractMatrix{<:ForwardDiff.Dual}) true
 ```
 """
-macro ForwardDiff_frule(sig, mutating=false)
+macro ForwardDiff_frule(sig, mutating = false)
     _fd_frule(sig; mutating)
 end
 export @ForwardDiff_frule
@@ -61,16 +61,16 @@ function ChainRulesCore.frule_via_ad(
     f_arg;
     kwargs...,
 )
-  direcct = frule(tangent, f, f_arg; kwargs...)
-  direcct === nothing || return direcct
-  T = eltype(f_arg)
-  g = t -> f(f_arg + t * tangent[2])
-  return g(zero(T)), ForwardDiff.derivative(g, zero(T))
+    direcct = frule(tangent, f, f_arg; kwargs...)
+    direcct === nothing || return direcct
+    T = eltype(f_arg)
+    g = t -> f(f_arg + t * tangent[2])
+    return g(zero(T)), ForwardDiff.derivative(g, zero(T))
 end
 
 const cfg = ForwardDiffRuleConfig()
 
-function _fd_frule(sig; mutating=false)
+function _fd_frule(sig; mutating = false)
     if MacroTools.@capture(sig, f_(x__; k__))
         nothing
     else
@@ -89,27 +89,48 @@ function _fd_frule(sig; mutating=false)
 
             xprimals = unflattenx(flat_xprimals)
             xprimals_copy = $mutating ? copy.(xprimals) : xprimals
-            xpartials1 = unflattenx(flat_xpartials[:,1])
+            xpartials1 = unflattenx(flat_xpartials[:, 1])
             yprimals, ypartials1 = ChainRulesCore.frule(
-                cfg, (NoTangent(), xpartials1...), f, xprimals_copy...; ks...,
+                cfg,
+                (NoTangent(), xpartials1...),
+                f,
+                xprimals_copy...;
+                ks...,
             )
-            flat_yprimals, unflatteny = ForwardDiffChainRules.DifferentiableFlatten.flatten(yprimals)
-            flat_ypartials1, _ = ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartials1)
-            flat_ypartials = hcat(reshape(flat_ypartials1, :, 1), ntuple(Val(CS - 1)) do i
-                if $mutating
-                    for (xpc, xp) in zip(xprimals_copy, xprimals)
-                        xpc .= xp # Update copy
+            flat_yprimals, unflatteny =
+                ForwardDiffChainRules.DifferentiableFlatten.flatten(yprimals)
+            flat_ypartials1, _ =
+                ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartials1)
+            flat_ypartials = hcat(
+                reshape(flat_ypartials1, :, 1),
+                ntuple(Val(CS - 1)) do i
+                    if $mutating
+                        for (xpc, xp) in zip(xprimals_copy, xprimals)
+                            xpc .= xp # Update copy
+                        end
                     end
-                end
-                xpartialsi = unflattenx(flat_xpartials[:, i+1])
-                _, ypartialsi = ChainRulesCore.frule(cfg, (NoTangent(), xpartialsi...), f, xprimals_copy...; ks...)
-                return ForwardDiffChainRules.DifferentiableFlatten.flatten(ypartialsi)[1]
-            end...)
+                    xpartialsi = unflattenx(flat_xpartials[:, i+1])
+                    _, ypartialsi = ChainRulesCore.frule(
+                        cfg,
+                        (NoTangent(), xpartialsi...),
+                        f,
+                        xprimals_copy...;
+                        ks...,
+                    )
+                    return ForwardDiffChainRules.DifferentiableFlatten.flatten(
+                        ypartialsi,
+                    )[1]
+                end...,
+            )
 
             T = ForwardDiff.tagtype(eltype(flatx))
-            flaty = ForwardDiff.Dual{T}.(
-                flat_yprimals, ForwardDiff.Partials.(NTuple{CS}.(eachrow(flat_ypartials))),
-            )
+            flaty =
+                ForwardDiff.Dual{
+                    T,
+                }.(
+                    flat_yprimals,
+                    ForwardDiff.Partials.(NTuple{CS}.(eachrow(flat_ypartials))),
+                )
             return unflatteny(flaty)
         end
     end
