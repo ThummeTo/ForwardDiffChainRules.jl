@@ -19,14 +19,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      # Set up Julia
-      - name: "Set up Julia"
-        uses: julia-actions/setup-julia@latest
+     # Set up julia-cache
+      - name: Set up julia-cache
+        uses: julia-actions/cache@v2
         with:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
 
-      - uses: actions/cache@v1
+     # Set up cache
+      - name: "Set up cache"
+        uses: actions/cache@v4
         env:
           cache-name: cache-artifacts
         with:
@@ -46,11 +48,11 @@ jobs:
         uses: julia-actions/julia-runtest@v1
 
       # Preprocess Coverage
-      - name: "Preprocess Coverage"
-        uses: julia-actions/julia-processcoverage@v1
+      #- name: "Preprocess Coverage"
+      #  uses: julia-actions/julia-processcoverage@v1
 
       # Run codecov
-      - name: "Run CodeCov"
-        uses: codecov/codecov-action@v1
-        with:
-          file: lcov.info
+      #- name: "Run CodeCov"
+      #  uses: codecov/codecov-action@v1
+      #  with:
+      #    file: lcov.info
